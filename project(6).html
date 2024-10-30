@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPU 검사</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            flex-direction: column;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 600px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .question {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+        }
+
+        .answer-button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            margin-bottom: 10px;
+            background-color: #e0e0e0;
+            border: 1px solid #b0b0b0;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .answer-button:hover {
+            background-color: #d0d0d0;
+        }
+
+        .answer-button.selected {
+            background-color: #4CAF50;
+            color: white;
+            border: 1px solid #4CAF50;
+        }
+
+        .selected-answer {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .result {
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 시작 화면 -->
+        <div id="startScreen">
+            <h1>CPU 검사</h1>
+            <p>시작 버튼을 눌러 질문을 시작하세요.</p>
+            <button id="startButton" class="button" onclick="startTest()">시작</button>
+        </div>
+
+        <!-- 질문 폼 -->
+        <form id="questionForm" class="hidden" onsubmit="submitForm(event)">
+            <h2>질문에 답하세요:</h2>
+
+            <div id="questionsContainer"></div>
+
+            <div id="selectedAnswer" class="selected-answer hidden"></div>
+
+            <button type="submit" class="button hidden" id="submitButton">제출</button>
+        </form>
+
+        <!-- 결과 화면 -->
+        <div id="resultScreen" class="hidden result">
+            <h1>검사 결과</h1>
+            <p id="resultMessage"></p>
+            <button class="button" onclick="restartTest()">다시 시작</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "엘리베이터를 탔을때 나는?",
+                options: [
+                    { text: "빨리 올라갔으면 좋겠다", value: 1 },
+                    { text: "갑자기 멈추거나 사고나면 어떡하지??", value: 2 }
+                ]
+            },
+            {
+                question: "방문을 열었는데..!!",
+                options: [
+                    { text: "3cm 짜리 바퀴벌레 100마리^^", value: 1 },
+                    { text: "2m 짜리 바퀴벌레 한마리^^", value: 2 }
+                ]
+            },
+            {
+                question: "친구와 약속을 잡고 만났다. 그 때 나는?",
+                options: [
+                    {text : " 우리 이제 어디갈까?", value : 1},  
+                    {text : "내가 다 계획이 있어 나만 따라오셈><" ,value : 2}
+                    ]
+            },
+            {
+                question: "오늘 길을 가다가 자빠져버렸다..그 때 나는?",
+                options: [
+                    {text : "너무 쪽팔려어어… 누가 봤으면 어떠카짐?..?'하루종일 생각하며 초능력을 발휘해 넘어지지 않는 상상한다.", value : 1},
+                    {text : "(툭툭 털고 일어서며) '아 개쪽팔려.' 아무일도 없는 척 일어서며 친구들에게 썰 풀 준비를 한다. " , value : 2}
+                ]
+            },
+            {
+                question: "선생님께서 어마어마한 겨울 방학 과제를 주시며 2주라는 시간을 주셨다. 그 때 나는?",
+                options: [
+                    {text : "오늘부터 차근차근 해야겟땅><", value : 1},
+                    {text : " 2주일이나 시간이 잇짜나? 1주일부터 해도 쌉가능이지이><", value : 2}
+                ]
+            },
+            {
+                question: "나는 누구인가.",
+                options: [
+                    {text : "불법도 괜찮아... 결과만 좋으면..- 결과주의 성향",value : 1 },
+                    {text : "올바르고 열심히 하자!! 결과: 전교 꼴등 -과정주의 성향", value : 2}
+                    ]
+            },
+            {
+                question: "나는 샤워할 때~~",
+                options: [
+                    {text : "아 더워 숨막히노...", value : 1},
+                    {text : "아 내가 오늘 왜 그랬지 아 맞다 내일 그건 어떡하냐 ",value : 2}
+                ]
+            },
+            {
+                question: "중간고사를 망했다. 그 때 나는 ?",
+                options: [
+                    {text : "조졌네, 하지만 기말을 잘보면 되쥬~~", value : 1},
+                    {text : "아 더 일찍 준비 할 걸..'스트레스 받으며 기말고사 계획을 짠다.",value : 2}
+                ]
+            },
+            {
+                question: "학교가 끝난 후",
+                options: [
+                    {text : "친구들이랑 놀면서 스트레스와 피로를 푼다.",value : 1},
+                     {text : "집.집.집.집. 누가 뭐래도 집에 간다.", value : 2}
+                ]
+            },
+            {
+                question: "나는 복잡한 문제 해결을 즐긴다.",
+                options: [
+                    {text : "친구들이랑 놀면서 스트레스와 피로를 푼다.", value : 1},
+                    {text : "집.집.집.집. 누가 뭐래도 집에 간다.", value : 2}
+                ]
+            },
+            {
+                question: "친구가 날보자 마자 눈물을 흘린다.",
+                options: [
+                    {text : "왜, 왜 무슨 일인데! (원인 파악 후 해결책생각)",value : 1},
+                     {text : " 헉 무슨 일인데 그래ㅠㅠ (선공감 후 해결책 생각)",value : 2}
+                ]
+            },
+            {
+                question: "연인이 바빠서 연락이 없네. 이때 나는?",
+                options: [
+                   {text : "무슨일 있나? 폭풍연락 보내기.", value : 1}, 
+                    {text : "나중에 연락오겠지 머... 내버려둔다.", value : 2}
+                ]
+            },
+            
+        ];
+
+        let currentQuestionIndex = 0;
+        let responses = [];
+
+        function startTest() {
+            const startScreen = document.getElementById('startScreen');
+            startScreen.remove();
+
+            document.getElementById('questionForm').classList.remove('hidden');
+            showQuestion(currentQuestionIndex);
+        }
+
+        function showQuestion(index) {
+            const questionsContainer = document.getElementById('questionsContainer');
+            questionsContainer.innerHTML = ''; 
+
+            const questionObj = questions[index];
+            const question = document.createElement('div');
+            question.className = 'question';
+            question.innerHTML = `<p>${index + 1}. ${questionObj.question}</p>`;
+
+            questionObj.options.forEach(option => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'answer-button';
+                button.textContent = option.text; // 수정된 부분
+                button.onclick = () => handleAnswer(option.value, button); // value를 전달하도록 수정
+                question.appendChild(button);
+            });
+
+            questionsContainer.appendChild(question);
+
+            updateSelectedAnswer();
+
+            if (index === questions.length - 1) {
+                document.getElementById('submitButton').classList.remove('hidden');
+            }
+        }
+
+        function handleAnswer(answer, button) {
+            responses[currentQuestionIndex] = answer;
+            const buttons = document.querySelectorAll('.answer-button');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            button.classList.add('selected');
+
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                showQuestion(currentQuestionIndex);
+            }
+        }
+
+        function updateSelectedAnswer() {
+            const selectedAnswerDiv = document.getElementById('selectedAnswer');
+            if (responses[currentQuestionIndex]) {
+                selectedAnswerDiv.innerHTML = `선택한 답변: ${responses[currentQuestionIndex]}`;
+                selectedAnswerDiv.classList.remove('hidden');
+            } else {
+                selectedAnswerDiv.classList.add('hidden');
+            }
+        }
+
+        function submitForm(event) {
+            event.preventDefault();
+            showResult();
+        }
+
+        function showResult() {
+            document.getElementById('questionForm').classList.add('hidden');
+            document.getElementById('resultScreen').classList.remove('hidden');
+            const resultMessage = responses.join(', ');
+            document.getElementById('resultMessage').textContent = `당신의 응답: ${resultMessage}`;
+        }
+
+        function restartTest() {
+            location.reload(); // 페이지 리로드로 테스트 초기화
+        }
+    </script>
+</body>
+</html>
