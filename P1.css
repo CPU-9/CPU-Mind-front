@@ -28,7 +28,7 @@ body {
 .Start-Button {
     top: 90%;
     transform: translate(-50%, -50%);
-    margin-left: 50%;
+    margin-left: 48%;
 }
 
 /* 마우스를 올렸을 때 시작 버튼 색상 변경 */
